@@ -1,0 +1,7 @@
+<h1>{{ county }}</h1>
+
+<ul>
+    {% for agency in county_agencies %}
+        <li>{{ agency.department }} violent: {{ agency.r_violent_16 }}</li>
+    {% endfor %}
+</ul>

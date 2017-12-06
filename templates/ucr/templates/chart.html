@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
+     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+                  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+                  crossorigin="anonymous"></script>
+        <script type="text/javascript">
+          google.charts.load('current', {'packages':['corechart']});
+          google.charts.setOnLoadCallback(clearanceChart);
+          google.charts.setOnLoadCallback(rateChart);
+
+          function clearanceChart() {
+              var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'YEAR'),
+                    data.addColumn('number', '{{ jurisdiction }} CLEARANCE RATE'),
+                    data.addColumn('number', 'U.S. AVERAGE CLEARANCE RATE')
+                    data.addRows([
+                            {% for year in crime_stats %}
+                                ["{{ year.0 }}", {{ year.1 }}, {{ year.2 }}] {% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        ]);
+
+
+              var options = {
+                      title: 'CLEARANCE RATE: PERCENTAGE OF {{ crime }} "CLEARED"',
+                      legend: { position: 'bottom' },
+                      hAxis: {
+
+                          gridlines: {count: {{ crime_stats | length }} }
+
+                      },
+                      vAxis: {format: '##%'},
+                      pointSize: 6
+
+                };
+
+            var chart = new google.visualization.LineChart(document.getElementById('clearance_chart'));
+
+            chart.draw(data, options);
+          };
+
+        function rateChart(){
+            var data = new google.visualization.DataTable();
+                data.addColumn("string", "YEAR");
+                data.addColumn("number", '{{ jurisdiction }} {{ crime | upper }} RATE');
+                data.addColumn("number", 'U.S. AVERAGE {{ crime | upper }} RATE');
+                data.addRows([
+                        {% for year in crime_stats %}
+                                ["{{ year.0 }}", {{ year.3 }}, {{ year.4 }}] {% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    ]);
+
+            var options = {
+                title: 'CRIME RATE: NUMBER OF {{ crime | upper }} PER 100,000 RESIDENTS',
+                legend: { position: 'bottom' }
+            }
+            var chart = new google.visualization.ColumnChart(document.getElementById('rate_chart'));
+            chart.draw(data, options);
+        };
+
+        </script>
+</head>
+<body>
+<div class="row">
+    <div class="col-sm-12">
+        <h2>{{ jurisdiction }}</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <h3>{{ crime | upper }} / {{ years | upper }}</h3>
+    </div>
+    <div class="col-md-6">
+        <p id="validationMessage" class="hidden"></p>
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="crime-type-select">Select Crime</label>
+                <select id="crime-type-select" class="form-control">
+                    <option value="violent">Violent Crime</option>
+                    <option value="property">Property Crime</option>
+                    <option value="homicide">Homicide</option>
+                    <option value="rape">Rape</option>
+                    <option value="robbery">Robbery</option>
+                    <option value="aggravated_assault">Aggravated Assault</option>
+                    <option value="burglary">Burglary</option>
+                    <option value="larceny">Larceny</option>
+                    <option value="gta">Vehicle Theft</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="start-year-select">Start Year</label>
+                <select id="start-year-select" class="form-control">
+                    <option value="2005">2005</option>
+                    <option value="2006">2006</option>
+                    <option value="2007">2007</option>
+                    <option value="2008">2008</option>
+                    <option value="2009">2009</option>
+                    <option value="2010">2010</option>
+                    <option value="2011">2011</option>
+                    <option value="2012">2012</option>
+                    <option value="2013">2013</option>
+                    <option value="2014">2014</option>
+                    <option value="2015">2015</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="end-year-select">End Year</label>
+                <select id="end-year-select" class="form-control">
+                    <option value="2005">2005</option>
+                    <option value="2006">2006</option>
+                    <option value="2007">2007</option>
+                    <option value="2008">2008</option>
+                    <option value="2009">2009</option>
+                    <option value="2010">2010</option>
+                    <option value="2011">2011</option>
+                    <option value="2012">2012</option>
+                    <option value="2013">2013</option>
+                    <option value="2014">2014</option>
+                    <option value="2015">2015</option>
+                </select>
+            </div>
+            <button id="getCrimeStats" type="button" class="btn btn-primary">GO</button>
+
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div id="rate_chart" style="width:100%;height:250px;"></div>
+    </div>
+    <div class="col-md-6">
+        <div id="clearance_chart" style="width:100%;height:250px;"></div>
+    </div>
+</div>
+</body>
+
+<script>
+    $(function(){
+
+
+        var ucr_base_url = "http://127.0.0.1:8000/ucr"
+
+
+        $("#getCrimeStats").click(function(){
+            var indexCrime, startYear, endYear, agency;
+
+            indexCrime = $('#crime-type-select').val();
+            startYear = parseInt($('#start-year-select').val());
+            endYear = parseInt($('#end-year-select').val());
+            agency = "{{ jurisdiction }}";
+            var re = /\s+/g
+            agency = agency.replace(re, '_')
+
+            if(endYear < startYear){
+                $('#validationMessage').html("<p>Error: Start year must be before end year</p>")
+                        .removeClass('hidden')
+                        .addClass('show bg-danger');
+            } else {
+                window.location.href = ucr_base_url + '/' + agency + '/' + startYear + '/' + endYear + '/' + indexCrime
+            }
+
+
+
+
+
+        })
+
+    });
+
+</script>
+
+
+
+</html>

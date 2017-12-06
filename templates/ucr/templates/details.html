@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ jurisdiction }} | </title>
+</head>
+<body>
+<h1>{{ jurisdiction }}</h1>
+<h2>{{ years }}</h2>
+<table>
+<th>
+    <tr>
+    <td>Crime</td>
+    <td>Incidents</td>
+    <td>Clearances</td>
+    <td>Rate</td>
+    </tr>
+</th>
+<tr>
+    <td>Homicide</td>
+    <td>{{ incidents.homicide.0 }}</td>
+    <td>{{ incidents.homicide.1 }}</td>
+    <td>{{ incidents.homicide.2 }}</td>
+</tr>
+<tr>
+    <td>Rape</td>
+    <td>{{ incidents.rape.0 }}</td>
+    <td>{{ incidents.rape.1 }}</td>
+    <td>{{ incidents.rape.2 }}</td>
+</tr>
+<tr>
+    <td>Robbery</td>
+    <td>{{ incidents.robbery.0 }}</td>
+    <td>{{ incidents.robbery.1 }}</td>
+    <td>{{ incidents.robbery.2 }}</td>
+</tr>
+<tr>
+    <td>Aggravated Assault</td>
+    <td>{{ incidents.aggravated_assault.0 }}</td>
+    <td>{{ incidents.aggravated_assault.1 }}</td>
+    <td>{{ incidents.aggravated_assault.2 }}</td>
+</tr>
+<tr>
+    <td>Burglary</td>
+    <td>{{ incidents.burglary.0 }}</td>
+    <td>{{ incidents.burglary.1 }}</td>
+    <td>{{ incidents.burglary.2 }}</td>
+</tr>
+<tr>
+    <td>Larceny</td>
+    <td>{{ incidents.larceny.0 }}</td>
+    <td>{{ incidents.larceny.1 }}</td>
+    <td>{{ incidents.larceny.2 }}</td>
+</tr>
+<tr>
+    <td>Vehicle Theft</td>
+    <td>{{ incidents.gta.0 }}</td>
+    <td>{{ incidents.gta.1 }}</td>
+    <td>{{ incidents.gta.2 }}</td>
+</tr>
+    
+    
+    
+</table>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+     <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <title>Title</title>
+</head>
+<body>
+<h1>{{ jurisdiction }}</h1>
+<h3>{{ year_list }}</h3>
+{% for year in crime_stats %}
+    <div class="col-md-6">
+
+    <h3>{{ year.0 }}</h3>
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th>
+                </th>
+                <th>
+                    Crimes
+                </th>
+                <th>
+                    Rate
+                </th>
+                <th>
+                    Average Rate
+                </th>
+                <th>
+                    Clearance Rate
+                </th>
+                <th>
+                    Average Clearance Rate
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    VIOLENT CRIME
+                </td>
+                <td>
+                    {{ year.1.avt }}
+                </td>
+                <td>
+                    {{ year.1.av }}
+                </td>
+                <td>
+                    {{ year.1.gv }}
+                </td>
+                <td>
+                    {{ year.1.avc }}
+                </td>
+                <td>
+                    {{ year.1.gvc }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    PROPERTY CRIME
+                </td>
+                <td>
+                    {{ year.1.apt }}
+                </td>
+                <td>
+                    {{ year.1.ap }}
+                </td>
+                <td>
+                    {{ year.1.gp }}
+                </td>
+                <td>
+                    {{ year.1.apc }}
+                </td>
+                <td>
+                    {{ year.1.gpc }}
+                </td>
+            </tr>
+        </tbody>
+
+    </table>
+    </div>
+
+{% endfor %}
+</body>
+</html>
