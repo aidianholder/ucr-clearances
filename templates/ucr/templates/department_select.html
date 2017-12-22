@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+</head>
+<body>
+<h1>{{ county }}</h1>
+<div class="row">
+    <div class="col-md-6">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="department-select">Select Agency</label>
+                <select id="department-select" class="form-control">
+                    {% for department in departments %}
+                        <option value="{{ department.1 }}">{{ department.0 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button id="getDepartmentDetail" type="button" class="btn btn-primary">GO</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        $('#getDepartmentDetail').click(function(){
+            const base_url = "http://127.0.0.1:8000/ucr/";
+            const department_selected = $('#department-select').val();
+            window.location.href = base_url + department_selected + '/violent/';
+        })
+    })
+
+
+</script>
+
+
+</body>
+</html>

@@ -2,10 +2,24 @@
 from __future__ import unicode_literals
 
 from decimal import *
-from django.http import HttpResponse
+#from django.http import HttpResponse
 from django.shortcuts import render
 from django.db.models import Sum
 from .models import *
+
+
+def county(request):
+    counties_tuple = list(Agency.objects.order_by('county').values_list('county').distinct())
+    counties = [county_name[0] for county_name in counties_tuple]
+    context = {'counties':counties}
+    return render(request, 'county_select.html', context)
+
+
+def department(request, selected_county):
+    leas = Agency.objects.filter(county=selected_county)
+    lea_details = [[agency.department, agency.ori] for agency in leas]
+    context = {'departments':lea_details, 'county':selected_county}
+    return render(request, 'department_select.html', context)
 
 
 def single_year(request, year, lea=None, ori=None):
@@ -19,7 +33,7 @@ def single_year(request, year, lea=None, ori=None):
         agency_stats = IncidentsClearances.objects.filter(ori=agency.ori).get(year=year)
     except:
         return render(request, 'nodata.html')
-    group_stats = GroupRates.objects.filter(pop_group = agency_stats.population).get(year=year)
+    group_stats = GroupRates.objects.filter(pop_group=agency_stats.population).get(year=year)
     index_crimes = ['homicide', 'rape', 'robbery', 'aggravated_assault', 'burglary', 'larceny', 'gta']
     incidents = {}
     for crime in index_crimes:
@@ -42,7 +56,7 @@ def single_year(request, year, lea=None, ori=None):
     return render(request, 'single_year.html', context)
 
 
-def multiple_year(request, startyear, endyear, lea=None, ori=None):
+def multiple_year(request, startyear=2005, endyear=2015, lea=None, ori=None):
     years = range(int(startyear), int(endyear) + 1)
     if lea:
         lea_cleaned = lea.replace('_', ' ').upper()
@@ -77,11 +91,11 @@ def multiple_year(request, startyear, endyear, lea=None, ori=None):
     return render(request, 'multi_year.html', context)
 
 
-def multi_year(request, startyear, endyear, lea=None, ori=None, crime="violent"):
+def multi_year(request, startyear=2005, endyear=2015, lea=None, ori=None, crime="violent"):
     years = range(int(startyear), int(endyear) + 1)
     if lea:
         lea_cleaned = lea.replace('_', ' ').upper()
-        agency = Agency.objects.get(department = lea_cleaned)
+        agency = Agency.objects.get(department=lea_cleaned)
     if ori:
         agency = Agency.objects.get(ori=ori)
         lea_cleaned = agency.department
@@ -94,8 +108,6 @@ def multi_year(request, startyear, endyear, lea=None, ori=None, crime="violent")
         year = ucr.year
         incidents = getattr(ucr, crime)
         clearances = getattr(ucr, "clearance_" + crime)
-        tot_incidents = 0
-        tot_clearances = 0
         crime_rate = (Decimal(incidents)/Decimal(ucr.pop_group)) * 100000
         crime_rate = crime_rate.quantize(Decimal('10.1'))
         try:

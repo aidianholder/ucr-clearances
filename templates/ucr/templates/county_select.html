@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="row">
+    <div class="col-md-6">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="county-select">Select County</label>
+                <select id="county-select" class="form-control">
+                    {% for county in counties %}
+                        <option value="{{ county }}">{{ county }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button id="getDepartments" type="button" class="btn btn-primary">GO</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        $('#getDepartments').click(function(){
+            const base_url = "http://127.0.0.1:8000/ucr/county/"
+            const county_selected = $('#county-select').val()
+            window.location.href = base_url + county_selected
+        })
+    })
+
+
+</script>
+
+
+</body>
+</html>
