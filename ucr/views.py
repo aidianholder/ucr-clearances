@@ -47,12 +47,12 @@ def single_year(request, year, lea=None, ori=None):
         try:
             clearance_rate = Decimal(no_clearances)/Decimal(no_incidents) * 100
             clearance_rate = clearance_rate.quantize(Decimal('10.01'))
-        except:
+        except InvalidOperation:
             clearance_rate = 'NA'
         r_group = getattr(group_stats, "r_" + crime)
         group_clearance_rate = getattr(group_stats, "cl_" + crime)
         incidents[crime] = [no_incidents, r_incidents, r_group, no_clearances, clearance_rate, group_clearance_rate]
-    context = {"jurisdiction":lea_cleaned, "year":year, "incidents":incidents}
+    context = {"jurisdiction": lea_cleaned, "year": year, "incidents": incidents}
     return render(request, 'single_year.html', context)
 
 
@@ -108,23 +108,26 @@ def multi_year(request, startyear=2005, endyear=2015, lea=None, ori=None, crime=
         year = ucr.year
         incidents = getattr(ucr, crime)
         clearances = getattr(ucr, "clearance_" + crime)
-        crime_rate = (Decimal(incidents)/Decimal(ucr.pop_group)) * 100000
-        crime_rate = crime_rate.quantize(Decimal('10.1'))
+        try:
+            crime_rate = (Decimal(incidents)/Decimal(ucr.pop_group)) * 100000
+            crime_rate = crime_rate.quantize(Decimal('10.1'))
+        except DivisionByZero or InvalidOperation:
+            crime_rate = 0
         try:
             clearance_rate = Decimal(clearances)/Decimal(incidents)
             clearance_rate = clearance_rate.quantize(Decimal('.0001'))
-        except DivisionByZero or InvalidOperation:
+        except InvalidOperation:
             clearance_rate = None
         group_stats = GroupRates.objects.filter(year=year).get(pop_group=ucr.population)
         group_rate = getattr(group_stats, "r_" + crime)
         group_clearance_rate = getattr(group_stats, "cl_" + crime)
-        if clearance_rate:
-            chart_data = [year, clearance_rate, group_clearance_rate/100, crime_rate, group_rate]
-            years_reported.append(chart_data)
-    if crime == "violent" or "property":
-        crime = crime + " crime"
-    elif crime == "gta" or "GTA":
-        crime = "vehicle theft"
+        chart_data = {'year': year, 'clearance_rate': clearance_rate, 'group_clearance_rate': group_clearance_rate/100, 'crime_rate': crime_rate, 'group_rate': group_rate, 'incidents': incidents, 'clearances': clearances}
+        years_reported.append(chart_data)
+    if crime in ("violent", "property"):
+        crime += " crimes"
+    #    crime = crime + " crime"
+    elif crime == "gta":
+        crime = "vehicle thefts"
     context = {'jurisdiction':lea_cleaned, 'crime':crime, 'crime_stats':years_reported, 'years':str(years[0]) + "-" + str(years[-1])}
     return render(request, 'chart.html', context)
 

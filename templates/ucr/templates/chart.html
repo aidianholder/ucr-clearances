@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
+    <style>
+        .rate-tooltip {
+            padding: 5px;
+        }
+        .year-tooltip {
+            font-size: 1.4em;
+
+        }
+
+    </style>
      <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"
                   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -17,21 +27,25 @@
               var data = new google.visualization.DataTable();
                     data.addColumn('string', 'YEAR');
                     data.addColumn('number', '{{ jurisdiction }} CLEARANCE RATE');
+                    data.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}}),
                     data.addColumn('number', 'U.S. AVERAGE CLEARANCE RATE');
                     data.addRows([
                             {% for year in crime_stats %}
-                                ["{{ year.0 }}", {{ year.1 }}, {{ year.2 }}] {% if not forloop.last %}, {% endif %}
+                                {% if year.clearance_rate != None %}
+                                ["{{ year.year }}", {{ year.clearance_rate }}, "<h3>{{ year.year }}</h3><p>INCIDENTS: {{ year.incidents }}<br/>CLEARANCES: {{ year.clearances }}<br/>CLEARANCE RATE: {{ year.clearance_rate }}</p> ",{{ year.group_clearance_rate }}] {% if not forloop.last %}, {% endif %}
+                                {% endif %}
                             {% endfor %}
                         ]);
 
               var options = {
-                      title: 'CLEARANCE RATE: PERCENTAGE OF {{ crime }} "CLEARED"',
+                      title: 'CLEARANCE RATE: PERCENTAGE OF {{ crime | upper }} "CLEARED"',
                       legend: { position: 'bottom' },
                       hAxis: {
                           gridlines: {count: {{ crime_stats | length }} }
                       },
                       vAxis: {format: '##%'},
-                      pointSize: 6
+                      pointSize: 6,
+                      tooltip: {isHtml: true}
               };
             var chart = new google.visualization.LineChart(document.getElementById('clearance_chart'));
             chart.draw(data, options);
@@ -41,16 +55,21 @@
             var data = new google.visualization.DataTable();
                 data.addColumn("string", "YEAR");
                 data.addColumn("number", '{{ jurisdiction }} {{ crime | upper }} RATE');
+                data.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}});
                 data.addColumn("number", 'U.S. AVERAGE {{ crime | upper }} RATE');
+
                 data.addRows([
                         {% for year in crime_stats %}
-                                ["{{ year.0 }}", {{ year.3 }}, {{ year.4 }}] {% if not forloop.last %}, {% endif %}
+                                ["{{ year.year }}", {{ year.crime_rate }},
+                                    "<div class='rate-tooltip'> <h3 class='year-tooltip'><b>{{ year.year }}</b></h3><p>{{ crime | upper }} {% if crime != 'violent crimes' and crime != 'property crimes'%} INCIDENTS {% endif %} REPORTED:&nbsp<b>{{ year.incidents }} </b></p> <p>RATE: <b>{{ year.crime_rate }}<br/>/<small>per 100,000 residents</small></b></p></div>",
+                                    {{ year.group_rate }}] {% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     ]);
 
             var options = {
                 title: 'CRIME RATE: NUMBER OF {{ crime | upper }} PER 100,000 RESIDENTS',
-                legend: { position: 'bottom' }
+                legend: { position: 'bottom' },
+                tooltip: {isHtml: true}
             };
             var chart = new google.visualization.ColumnChart(document.getElementById('rate_chart'));
             chart.draw(data, options);
@@ -58,43 +77,69 @@
         </script>
 </head>
 <body>
-<div class="row">
-    <div class="col-sm-12">
-        <h2>{{ jurisdiction }}</h2>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <h2>{{ jurisdiction }}</h2>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-md-6">
-        <h3>{{ crime | upper }} / {{ years | upper }}</h3>
-    </div>
-    <div class="col-md-6">
-        <form class="form-inline">
-            <div class="form-group">
-                <label for="crime-type-select">Select Crime</label>
-                <select id="crime-type-select" class="form-control">
-                    <option value="violent">Violent Crime</option>
-                    <option value="property">Property Crime</option>
-                    <option value="homicide">Homicide</option>
-                    <option value="rape">Rape</option>
-                    <option value="robbery">Robbery</option>
-                    <option value="aggravated_assault">Aggravated Assault</option>
-                    <option value="burglary">Burglary</option>
-                    <option value="larceny">Larceny</option>
-                    <option value="gta">Vehicle Theft</option>
-                </select>
+    <div class="row">
+        <div class="col-sm-3">
+            <form>
+                <div class="form-group">
+                    <select id="crime-type-select" class="form-control">
+                        <option value="violent" {% if crime == 'violent crimes' %}selected{% endif %}>Violent Crime</option>
+                        <option value="property" {% if crime == 'property crimes' %}selected                        {% endif %}>Property Crime</option>
+                        <option value="homicide" {% if crime == 'homicide' %}selected{% endif %}>Homicide</option>
+                        <option value="rape" {% if crime == 'rape' %}selected{% endif %}>Rape</option>
+                        <option value="robbery" {% if crime == 'robbery' %}selected{% endif %}>Robbery</option>
+                        <option value="aggravated_assault" {% if crime == 'aggravated_assault' %}selected{% endif %}>Aggravated Assault</option>
+                        <option value="burglary" {% if crime == 'burglary' %}selected{% endif %}>Burglary</option>
+                        <option value="larceny" {% if crime == 'larceny' %}selected{% endif %}>Larceny</option>
+                        <option value="gta" {% if crime == 'vehicle thefts' %}selected{% endif %}>Vehicle Theft</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+            <div class="col-sm-3">
+                <button id="getCrimeStats" type="button" class="btn btn-primary btn-block">GO</button>
             </div>
-            <button id="getCrimeStats" type="button" class="btn btn-primary">GO</button>
 
-        </form>
+
     </div>
-</div>
-<div class="row">
-    <div class="col-md-6">
-        <div id="rate_chart" style="width:100%;height:250px;"></div>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div id="rate_chart" style="width:100%;height:250px;"></div>
+        </div>
+        <div class="col-md-10 col-md-offset-1">
+            <div id="clearance_chart" style="width:100%;height:250px;"></div>
+        </div>
     </div>
-    <div class="col-md-6">
-        <div id="clearance_chart" style="width:100%;height:250px;"></div>
+
+    <div class="row">
+        <div class="well col-md-10 col-md-offset-1">
+            <h3>The Fine Print</h3>
+            <p>
+                <small>
+                    AVERAGE RATE: Average crime and clearances rates are for jurisdictions of similar population size as defined by the FBI.  There are a total of seven categories ranging from group 1, for jurisdictions with 250,000+ population to group 7, for jurisdictions with from 10,000 or fewer people.
+                </small>
+            </p>
+            <p>
+                <small>
+                    CLEARANCES: According to the FBI, A crime is cleared either when an arrest (not necessarily a conviction) is made or when the perpetrator has been identified and law enforcement has enough evidence to prosecute but some circumstance outside the agency's control prevents prosecution.  Examples of this include if the perpetrator is dead, witnesses refuse to cooperate with prosecution, or if the offender is jailed in some other jurisdiction and not extradited.
+                </small>
+            </p>
+            <p>
+                <small>
+                    WHY IS THERE A CLEARANCE RATE ABOVE 100%? Clearances are recorded based on the year of the <em>clearance</em> not necessarily the year of the crime. So if a crime occurs in December and an arrest is made in January, the clearance is recorded for the second year.  A number of agencies saw a spike in homicide clearances in the early 2000s as DNA technology allowed for older 'cold' cases to be cleared.
+                </small>
+            </p>
+        </div>
+
     </div>
+
+
+
 </div>
 </body>
 
