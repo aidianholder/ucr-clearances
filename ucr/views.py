@@ -11,14 +11,14 @@ from .models import *
 def county(request):
     counties_tuple = list(Agency.objects.order_by('county').values_list('county').distinct())
     counties = [county_name[0] for county_name in counties_tuple]
-    context = {'counties':counties}
+    context = {'counties': counties}
     return render(request, 'county_select.html', context)
 
 
 def department(request, selected_county):
     leas = Agency.objects.filter(county=selected_county)
     lea_details = [[agency.department, agency.ori] for agency in leas]
-    context = {'departments':lea_details, 'county':selected_county}
+    context = {'departments': lea_details, 'county': selected_county}
     return render(request, 'department_select.html', context)
 
 
@@ -104,6 +104,7 @@ def multi_year(request, startyear=2005, endyear=2015, lea=None, ori=None, crime=
     except:
         return render(request, 'nodata.html')
     years_reported = []
+    no_data = [0, 0]
     for ucr in agency_stats:
         year = ucr.year
         incidents = getattr(ucr, crime)
@@ -111,13 +112,15 @@ def multi_year(request, startyear=2005, endyear=2015, lea=None, ori=None, crime=
         try:
             crime_rate = (Decimal(incidents)/Decimal(ucr.pop_group)) * 100000
             crime_rate = crime_rate.quantize(Decimal('10.1'))
-        except DivisionByZero or InvalidOperation:
-            crime_rate = 0
+        except (InvalidOperation, DivisionByZero):
+            crime_rate = None
+            no_data[0] += 1
         try:
             clearance_rate = Decimal(clearances)/Decimal(incidents)
             clearance_rate = clearance_rate.quantize(Decimal('.0001'))
         except InvalidOperation:
             clearance_rate = None
+            no_data[1] += 1
         group_stats = GroupRates.objects.filter(year=year).get(pop_group=ucr.population)
         group_rate = getattr(group_stats, "r_" + crime)
         group_clearance_rate = getattr(group_stats, "cl_" + crime)
@@ -128,7 +131,13 @@ def multi_year(request, startyear=2005, endyear=2015, lea=None, ori=None, crime=
     #    crime = crime + " crime"
     elif crime == "gta":
         crime = "vehicle thefts"
-    context = {'jurisdiction':lea_cleaned, 'crime':crime, 'crime_stats':years_reported, 'years':str(years[0]) + "-" + str(years[-1])}
+    rate_chart = True
+    clearance_chart = True
+    if no_data[0] >= len(years_reported):
+        rate_chart = False
+    if no_data[1] >= len(years_reported):
+        clearance_chart = False
+    context = {'county': agency.county, 'rate_chart': rate_chart, 'clearance_chart': clearance_chart, 'jurisdiction': lea_cleaned, 'crime': crime, 'crime_stats':years_reported, 'years':str(years[0]) + "-" + str(years[-1])}
     return render(request, 'chart.html', context)
 
 
