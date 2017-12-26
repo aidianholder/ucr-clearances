@@ -23,6 +23,7 @@
           google.charts.setOnLoadCallback(clearanceChart);
           google.charts.setOnLoadCallback(rateChart);
 
+          {% if clearance_chart %}
           function clearanceChart() {
               var data = new google.visualization.DataTable();
                     data.addColumn('string', 'YEAR');
@@ -50,7 +51,9 @@
             var chart = new google.visualization.LineChart(document.getElementById('clearance_chart'));
             chart.draw(data, options);
           }
+          {% endif %}
 
+          {% if rate_chart %}
         function rateChart(){
             var data = new google.visualization.DataTable();
                 data.addColumn("string", "YEAR");
@@ -60,9 +63,11 @@
 
                 data.addRows([
                         {% for year in crime_stats %}
+                            {% if year.crime_rate != None %}
                                 ["{{ year.year }}", {{ year.crime_rate }},
                                     "<div class='rate-tooltip'> <h3 class='year-tooltip'><b>{{ year.year }}</b></h3><p>{{ crime | upper }} {% if crime != 'violent crimes' and crime != 'property crimes'%} INCIDENTS {% endif %} REPORTED:&nbsp<b>{{ year.incidents }} </b></p> <p>RATE: <b>{{ year.crime_rate }}<br/>/<small>per 100,000 residents</small></b></p></div>",
                                     {{ year.group_rate }}] {% if not forloop.last %}, {% endif %}
+                            {% endif %}
                         {% endfor %}
                     ]);
 
@@ -74,10 +79,21 @@
             var chart = new google.visualization.ColumnChart(document.getElementById('rate_chart'));
             chart.draw(data, options);
         }
+          {% endif %}
         </script>
 </head>
 <body>
 <div class="container">
+    <ol class="breadcrumb">
+        <li>
+            <a href="\ucr">HOME</a>
+        </li>
+        <li>
+            <a href="\ucr\county\{{ county }}">{{ county }} COUNTY</a>
+        </li>
+            <li class="active">{{ jurisdiction }}</li>
+
+    </ol>
     <div class="row">
         <div class="col-sm-12">
             <h2>{{ jurisdiction }}</h2>
@@ -109,10 +125,20 @@
     </div>
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
-            <div id="rate_chart" style="width:100%;height:250px;"></div>
+            {% if rate_chart == False %}
+                <p><b>No crime rate data available for {{ jurisdiction }}</b></p>
+            {% endif %}
+            {% if rate_chart == True %}
+                <div id="rate_chart" style="width:100%;height:250px;"></div>
+            {% endif %}
         </div>
         <div class="col-md-10 col-md-offset-1">
-            <div id="clearance_chart" style="width:100%;height:250px;"></div>
+            {% if clearance_chart == False %}
+                <p><b>No clearance rate data avaiable for {{ jurisdiction }}</b></p>
+            {% endif %}
+            {% if clearance_chart == True %}
+                <div id="clearance_chart" style="width:100%;height:250px;"></div>
+            {% endif %}
         </div>
     </div>
 

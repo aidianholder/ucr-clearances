@@ -7,23 +7,36 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 </head>
 <body>
-<h1>{{ county }}</h1>
-<div class="row">
-    <div class="col-md-6">
-        <form class="form-inline">
-            <div class="form-group">
-                <label for="department-select">Select Agency</label>
-                <select id="department-select" class="form-control">
-                    {% for department in departments %}
-                        <option value="{{ department.1 }}">{{ department.0 }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button id="getDepartmentDetail" type="button" class="btn btn-primary">GO</button>
-        </form>
+<div class="container">
+    <ol class="breadcrumb">
+        <li>
+            <a href="\ucr">Home</a>
+        </li>
+        <li>
+            {%  url 'department_select' as couty_page_url%}
+            <a href="{{ county_page_url }}">{{ county }}</a>
+        </li>
+            <li class="active">Agency</li>
+
+    </ol>
+
+    <h1>{{ county }}</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <form class="form-inline">
+                <div class="form-group">
+                    <label for="department-select">Select Agency</label>
+                    <select id="department-select" class="form-control">
+                        {% for department in departments %}
+                            <option value="{{ department.1 }}">{{ department.0 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button id="getDepartmentDetail" type="button" class="btn btn-primary">GO</button>
+            </form>
+        </div>
     </div>
 </div>
-
 <script>
     $(function(){
         $('#getDepartmentDetail').click(function(){
