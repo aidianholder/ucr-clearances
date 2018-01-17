@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Select Law Enforcement Agency</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 </head>
@@ -10,13 +10,13 @@
 <div class="container">
     <ol class="breadcrumb">
         <li>
-            <a href="\ucr">Home</a>
+            <a href="\ucr">HOME</a>
         </li>
         <li>
             {%  url 'department_select' as couty_page_url%}
             <a href="{{ county_page_url }}">{{ county }}</a>
         </li>
-            <li class="active">Agency</li>
+            <li class="active">AGENCY</li>
 
     </ol>
 
@@ -41,7 +41,7 @@
     $(function(){
         $('#getDepartmentDetail').click(function(){
             const base_url = "http://127.0.0.1:8000/ucr/";
-            const department_selected = $('#department-select').val();
+            let department_selected = $('#department-select').val();
             window.location.href = base_url + department_selected + '/violent/';
         })
     })

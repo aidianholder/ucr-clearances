@@ -4,17 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
-    <style>
-        .rate-tooltip {
-            padding: 5px;
-        }
-        .year-tooltip {
-            font-size: 1.4em;
-
-        }
-
-    </style>
-     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"
                   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
                   crossorigin="anonymous"></script>
@@ -27,8 +17,8 @@
           function clearanceChart() {
               var data = new google.visualization.DataTable();
                     data.addColumn('string', 'YEAR');
-                    data.addColumn('number', '{{ jurisdiction }} CLEARANCE RATE');
-                    data.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}}),
+                    data.addColumn('number', "{{ jurisdiction | safe }} CLEARANCE RATE");
+                    data.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}});
                     data.addColumn('number', 'U.S. AVERAGE CLEARANCE RATE');
                     data.addRows([
                             {% for year in crime_stats %}
@@ -57,7 +47,7 @@
         function rateChart(){
             var data = new google.visualization.DataTable();
                 data.addColumn("string", "YEAR");
-                data.addColumn("number", '{{ jurisdiction }} {{ crime | upper }} RATE');
+                data.addColumn("number", "{{ jurisdiction | safe }} {{ crime | upper }} RATE");
                 data.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}});
                 data.addColumn("number", 'U.S. AVERAGE {{ crime | upper }} RATE');
 
@@ -103,6 +93,7 @@
         <div class="col-sm-3">
             <form>
                 <div class="form-group">
+
                     <select id="crime-type-select" class="form-control">
                         <option value="violent" {% if crime == 'violent crimes' %}selected{% endif %}>Violent Crime</option>
                         <option value="property" {% if crime == 'property crimes' %}selected                        {% endif %}>Property Crime</option>
@@ -124,23 +115,28 @@
 
     </div>
     <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-            {% if rate_chart == False %}
-                <p><b>No crime rate data available for {{ jurisdiction }}</b></p>
-            {% endif %}
-            {% if rate_chart == True %}
-                <div id="rate_chart" style="width:100%;height:250px;"></div>
-            {% endif %}
-        </div>
-        <div class="col-md-10 col-md-offset-1">
-            {% if clearance_chart == False %}
-                <p><b>No clearance rate data avaiable for {{ jurisdiction }}</b></p>
-            {% endif %}
-            {% if clearance_chart == True %}
-                <div id="clearance_chart" style="width:100%;height:250px;"></div>
-            {% endif %}
-        </div>
+
+                <div class="col-md-10 col-md-offset-1">
+                    {% if clearance_chart == False %}
+                        <p><b>No clearance rate data avaiable for {{ jurisdiction }}</b></p>
+                    {% endif %}
+                    {% if clearance_chart == True %}
+                        <div id="clearance_chart" style="width:100%;height:250px;"></div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-10 col-md-offset-1">
+
+
+                    {% if rate_chart == False %}
+                        <p><b>No crime rate data available for {{ jurisdiction }}</b></p>
+                    {% endif %}
+                    {% if rate_chart == True %}
+                        <div id="rate_chart" style="width:100%;height:250px;"></div>
+                    {% endif %}
+                </div>
     </div>
+
 
     <div class="row">
         <div class="well col-md-10 col-md-offset-1">
@@ -172,16 +168,14 @@
 <script>
     $(function(){
 
-        var ucr_base_url = "http://127.0.0.1:8000/ucr";
-
         $("#getCrimeStats").click(function(){
-            var indexCrime, agency;
-
+            let indexCrime, currentURL, newURL;
+            currentURL = window.location.href;
+            currentURL = currentURL.split('/');
             indexCrime = $('#crime-type-select').val();
-            agency = "{{ jurisdiction }}";
-            var re = /\s+/g;
-            agency = agency.replace(re, '_');
-            window.location.href = ucr_base_url + '/' + agency + '/' + indexCrime
+            currentURL[currentURL.length - 2] = indexCrime;
+            newURL = currentURL.join('/');
+            window.location.href = newURL;
         })
     });
 
