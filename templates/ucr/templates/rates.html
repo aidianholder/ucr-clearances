@@ -2,102 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>"{{ jursidiction }} Crimes and Clearances "</title>
+    <title>Crime Rates for {{ jurisdiction }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
-    <style>
-        .ucr-tooltip {
-            padding: 10px;
-        }
-
-        .ucr-details span {
-            font-size: 1.4em;
-        }
-
-    </style>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"
                   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
                   crossorigin="anonymous"></script>
         <script type="text/javascript">
-
-            let crimeType = "{{ crime }}";
-            crimeType = crimeType.replace("_", " ");
-            if (crimeType in ["violent", "property"]){
-                crimeType += " crimes"
-            }
-            if (crimeType == 'gta'){
-                crimeType = 'vehicle theft'
-            }
-
-            const plural = {
-                "violent": "violent crimes",
-                "property": "property crimes",
-                "homicide": "homicides",
-                "rape": "rapes",
-                "robbery": "robberies",
-                "aggravated assault": "aggravated assaults",
-                "burglary": "burglaries",
-                "larceny": "larcenies",
-                "vehicle theft": "vehicle thefts"
-            };
-
           google.charts.load('current', {'packages':['corechart']});
-
-          {% if clearance_chart %}
-              google.charts.setOnLoadCallback(clearanceChart);
-
-          function clearanceChart() {
-              var data = new google.visualization.DataTable();
-                    data.addColumn('string', 'YEAR');
-                    data.addColumn('number', "{{ jurisdiction | safe }} CLEARANCE RATE");
-                    data.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}});
-                    data.addColumn('number', 'U.S. AVERAGE CLEARANCE RATE');
-                    data.addRows([
-                            {% for year in crime_stats %}
-                                {% if year.clearance_rate != None %}
-                                ["{{ year.year }}", {{ year.clearance_rate }}, "<div class='ucr-tooltip'><h3>{{ year.year }}: <small>" + plural[crimeType].toUpperCase() + "</small></h3><p class='ucr-details'><strong>INCIDENTS:</strong> <span>{{ year.incidents }}</span><br/><strong>CLEARANCES:</strong><span> {{ year.clearances }}</span><br/><strong>CLEARANCE RATE:</strong><span> {{ year.clearance_rate }}</span></p></div> ",{{ year.group_clearance_rate }}] {% if not forloop.last %}, {% endif %}
-                                {% endif %}
-                            {% endfor %}
-                        ]);
-
-              var options = {
-                      title: 'CLEARANCE RATE: PERCENTAGE OF ' + plural[crimeType].toUpperCase()  + ' CLEARED',
-                      legend: { position: 'bottom' },
-                      hAxis: {
-                          gridlines: {count: {{ crime_stats | length }} }
-                      },
-                      vAxis: {format: '##%'},
-                      pointSize: 6,
-                      tooltip: {isHtml: true}
-              };
-            var chart = new google.visualization.LineChart(document.getElementById('clearance_chart'));
-            chart.draw(data, options);
-          }
-          {% endif %}
+          google.charts.setOnLoadCallback(rateChart);
 
           {% if rate_chart %}
-
-              google.charts.setOnLoadCallback(rateChart);
-
         function rateChart(){
             var data = new google.visualization.DataTable();
                 data.addColumn("string", "YEAR");
-                data.addColumn("number", "{{ jurisdiction | safe }} " + crimeType.toUpperCase() + " RATE");
+                data.addColumn("number", "{{ jurisdiction | safe }} {{ crime | upper }} RATE");
                 data.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}});
-                data.addColumn("number", 'U.S. AVERAGE ' + crimeType.toUpperCase() + ' RATE');
+                data.addColumn("number", 'U.S. AVERAGE {{ crime | upper }} RATE');
 
                 data.addRows([
                         {% for year in crime_stats %}
                             {% if year.crime_rate != None %}
                                 ["{{ year.year }}", {{ year.crime_rate }},
-                                    "<div class='ucr-tooltip'> <h3>{{ year.year }}: <small>" + plural[crimeType].toUpperCase() + " </small></h3><p class='ucr-details'><strong>INCIDENTS REPORTED:&nbsp</strong><span>{{ year.incidents }} </span><br/><strong>RATE: </strong><span>{{ year.crime_rate }}</span> per 100,000 residents</p></div>",
+                                    "<div class='rate-tooltip'> <h3 class='year-tooltip'><b>{{ year.year }}</b></h3><p>{{ crime | upper }} {% if crime != 'violent crimes' and crime != 'property crimes'%} INCIDENTS {% endif %} REPORTED:&nbsp<b>{{ year.incidents }} </b></p> <p>RATE: <b>{{ year.crime_rate }}/per 100,000 residents</b></p></div>",
                                     {{ year.group_rate }}] {% if not forloop.last %}, {% endif %}
                             {% endif %}
                         {% endfor %}
                     ]);
 
             var options = {
-                title: 'CRIME RATE: NUMBER OF ' + plural[crimeType].toUpperCase() + ' PER 100,000 RESIDENTS',
+                title: 'CRIME RATE: NUMBER OF {{ crime | upper }} PER 100,000 RESIDENTS',
                 legend: { position: 'bottom' },
                 tooltip: {isHtml: true}
             };
@@ -117,7 +51,6 @@
             <a href="{% url 'ucr:department_select' county %}">{{ county }} COUNTY</a>
         </li>
             <li class="active">{{ jurisdiction }}</li>
-
     </ol>
     <div class="row">
         <div class="col-sm-12">
@@ -128,16 +61,17 @@
         <div class="col-sm-3">
             <form>
                 <div class="form-group">
+
                     <select id="crime-type-select" class="form-control">
-                        <option value="violent" {% if crime == 'violent' %}selected{% endif %}>Violent Crime</option>
-                        <option value="property" {% if crime == 'property' %}selected{% endif %}>Property Crime</option>
+                        <option value="violent" {% if crime == 'violent crimes' %}selected{% endif %}>Violent Crime</option>
+                        <option value="property" {% if crime == 'property crimes' %}selected                        {% endif %}>Property Crime</option>
                         <option value="homicide" {% if crime == 'homicide' %}selected{% endif %}>Homicide</option>
                         <option value="rape" {% if crime == 'rape' %}selected{% endif %}>Rape</option>
                         <option value="robbery" {% if crime == 'robbery' %}selected{% endif %}>Robbery</option>
                         <option value="aggravated_assault" {% if crime == 'aggravated_assault' %}selected{% endif %}>Aggravated Assault</option>
                         <option value="burglary" {% if crime == 'burglary' %}selected{% endif %}>Burglary</option>
                         <option value="larceny" {% if crime == 'larceny' %}selected{% endif %}>Larceny</option>
-                        <option value="gta" {% if crime == 'vehicle theft' %}selected{% endif %}>Vehicle Theft</option>
+                        <option value="gta" {% if crime == 'vehicle thefts' %}selected{% endif %}>Vehicle Theft</option>
                     </select>
                 </div>
             </form>
@@ -145,21 +79,11 @@
             <div class="col-sm-3">
                 <button id="getCrimeStats" type="button" class="btn btn-primary btn-block">GO</button>
             </div>
+
+
     </div>
     <div class="row">
-
                 <div class="col-md-10 col-md-offset-1">
-                    {% if clearance_chart == False %}
-                        <p><b>No clearance rate data avaiable for {{ jurisdiction }}</b></p>
-                    {% endif %}
-                    {% if clearance_chart == True %}
-                        <div id="clearance_chart" style="width:100%;height:250px;"></div>
-                    {% endif %}
-                </div>
-
-                <div class="col-md-10 col-md-offset-1">
-
-
                     {% if rate_chart == False %}
                         <p><b>No crime rate data available for {{ jurisdiction }}</b></p>
                     {% endif %}

@@ -93,16 +93,9 @@ def multiple_year(request, startyear=2005, endyear=2015, lea=None, ori=None):
 
 def multi_year(request, startyear=2005, endyear=2015, lea=None, ori=None, crime="violent"):
     years = range(int(startyear), int(endyear) + 1)
-    if lea:
-        lea_cleaned = lea.replace('_', ' ').upper()
-        agency = Agency.objects.get(department=lea_cleaned)
-    if ori:
-        agency = Agency.objects.get(ori=ori)
-        lea_cleaned = agency.department
-    try:
-        agency_stats = IncidentsClearances.objects.filter(ori=agency.ori).filter(year__in=years)
-    except:
-        return render(request, 'nodata.html')
+    agency = Agency.objects.get(ori=ori)
+    lea_cleaned = agency.department
+    agency_stats = IncidentsClearances.objects.filter(ori=agency.ori).filter(year__in=years)
     years_reported = []
     no_data = [0, 0]
     for ucr in agency_stats:
@@ -121,38 +114,61 @@ def multi_year(request, startyear=2005, endyear=2015, lea=None, ori=None, crime=
         except InvalidOperation:
             clearance_rate = None
             no_data[1] += 1
+        except DivisionByZero:
+            clearance_rate = 1
         group_stats = GroupRates.objects.filter(year=year).get(pop_group=ucr.population)
         group_rate = getattr(group_stats, "r_" + crime)
         group_clearance_rate = getattr(group_stats, "cl_" + crime)
-        chart_data = {'year': year, 'clearance_rate': clearance_rate, 'group_clearance_rate': group_clearance_rate/100, 'crime_rate': crime_rate, 'group_rate': group_rate, 'incidents': incidents, 'clearances': clearances}
+        chart_data = dict(year=year, clearance_rate=clearance_rate, group_clearance_rate=group_clearance_rate / 100,
+                          crime_rate=crime_rate, group_rate=group_rate, incidents=incidents, clearances=clearances)
         years_reported.append(chart_data)
-    if crime in ("violent", "property"):
-        crime += " crimes"
-    #    crime = crime + " crime"
+    """if crime in ("violent", "property"):
+        crime += " crime"
     elif crime == "gta":
-        crime = "vehicle thefts"
+        crime = "vehicle theft"""
     rate_chart = True
     clearance_chart = True
     if no_data[0] >= len(years_reported):
         rate_chart = False
     if no_data[1] >= len(years_reported):
         clearance_chart = False
-    context = {'county': agency.county, 'rate_chart': rate_chart, 'clearance_chart': clearance_chart, 'jurisdiction': lea_cleaned, 'crime': crime, 'crime_stats':years_reported, 'years':str(years[0]) + "-" + str(years[-1])}
+    context = dict(county=agency.county, rate_chart=rate_chart, clearance_chart=clearance_chart,
+                   jurisdiction=lea_cleaned, crime=crime, crime_stats=years_reported,
+                   years=str(years[0]) + "-" + str(years[-1]))
     return render(request, 'chart.html', context)
 
 
-"""        if crime == 'violent':
-            crime = ucr.homicide + ucr.rape + ucr.robbery + ucr.aggravated_assault
-        elif crime = 'property':
+def multi_year_rates(request, startyear=2005, endyear=2015, ori=None, crime="violent"):
+    years = range(int(startyear), int(endyear) + 1)
+    agency = Agency.objects.get(ori=ori)
+    lea_cleaned = agency.department
+    agency_stats = IncidentsClearances.objects.filter(ori=agency.ori).filter(year__in=years)
+    years_reported = []
+    no_data = 0
     for ucr in agency_stats:
-        violent_crime = ucr.homicide + ucr.rape + ucr.robbery + ucr.aggravated_assault
-        violent_clearances = ucr.clearance_homicide + ucr.clearance_rape + ucr.clearance_robbery + ucr.clearance_aggravated_assault
-        violent_clearance_rate = Decimal(violent_clearances) / Decimal(violent_crime) * 100
-        violent_clearance_rate = violent_clearance_rate.quantize(Decimal('10.01'))
-        property_crime = ucr.burglary + ucr.larceny + ucr.gta
-        property_clearances = ucr.clearance_burglary + ucr.clearance_larceny + ucr.clearance_gta
-        property_clearance_rate = Decimal(property_clearances) / Decimal(property_crime) * 100
-        property_clearance_rate = property_clearance_rate.quantize(Decimal('10.01'))"""
+        year = ucr.year
+        incidents = getattr(ucr, crime)
+        try:
+            crime_rate = (Decimal(incidents)/Decimal(ucr.pop_group)) * 100000
+            crime_rate = crime_rate.quantize(Decimal('10.1'))
+        except (InvalidOperation, DivisionByZero):
+            crime_rate = None
+            no_data += 1
+        group_stats = GroupRates.objects.filter(year=year).get(pop_group=ucr.population)
+        group_rate = getattr(group_stats, "r_" + crime)
+        chart_data = {'year': year, 'crime_rate': crime_rate, 'group_rate': group_rate, 'incidents': incidents}
+        years_reported.append(chart_data)
+    if crime in ("violent", "property"):
+        crime += " crime"
+    elif crime == "gta":
+        crime = "vehicle theft"
+    if no_data >= len(years_reported):
+        rate_chart = False
+    else:
+        rate_chart = True
+    context = dict(county=agency.county, rate_chart=rate_chart, jurisdiction=lea_cleaned, crime=crime,
+                   crime_stats=years_reported, years=str(years[0]) + "-" + str(years[-1]))
+    return render(request, 'rates.html', context)
 
 
 def crimes_and_clearances(request, county, lea=None, startyear='2005', endyear='2015'):
@@ -190,28 +206,3 @@ def crimes_and_clearances(request, county, lea=None, startyear='2005', endyear='
         incidents[crime] = [no_of_incidents, no_of_clearances, r]
     context = {'jurisdiction': jurisdiction, 'years':years, 'incidents': incidents}
     return render(request, 'details.html', context)
-
-
-
-
-"""def agency_detail(request, county, department, startyear, endyear):
-    department_cleaned = department.replace('_', ' ')
-    department_cleaned = department_cleaned.upper()
-    agency = Agency.objects.get(department=department_cleaned)
-    if startyear == endyear:
-        years = [int(startyear)]
-    else:
-        years = range(int(startyear), int(endyear))
-    cc = IncidentsClearances.objects.filter(ori__in=agency).filter(year__in=years)
-    
-    context = {'agency': agency}
-    return render(request, 'ucr/agency_detail.html', context)
-
-    rates = {agency.ori.r_violent_16}
-    data_years = [Crime2012, Crime2013, Crime2014, Crime2015, Crime2016]
-    for year in data_years:
-        c = agency.year_set.all()
-    c_2016 = agency.crime2016_set.all()
-    v_16 = c_2016.r_violent_crime
-    p_16 = c_2016.r_property_crime
-    c_2015 ="""

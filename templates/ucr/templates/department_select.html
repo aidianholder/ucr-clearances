@@ -10,11 +10,10 @@
 <div class="container">
     <ol class="breadcrumb">
         <li>
-            <a href="\ucr">HOME</a>
+            <a href="{% url "ucr:base" %}">HOME</a>
         </li>
         <li>
-            {%  url 'department_select' as couty_page_url%}
-            <a href="{{ county_page_url }}">{{ county }}</a>
+            <a href="{% url "ucr:department_select" county %}">{{ county }}</a>
         </li>
             <li class="active">AGENCY</li>
 
