@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ jursidiction }} Crimes and Clearances</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
+    <style>
+
+    </style>
+
+</head>
+<body>
+<div class="container">
+    <ol class="breadcrumb">
+        <li>
+            <a href="{% url 'ucr:base' %}">HOME</a>
+        </li>
+        <li>
+            <a href="{% url 'ucr:department_select' county %}">{{ county }} COUNTY</a>
+        </li>
+            <li class="active">{{ jurisdiction }}</li>
+
+    </ol>
+
+
+
+</div><!--end bootstrap container-->
+</body>
+</html>

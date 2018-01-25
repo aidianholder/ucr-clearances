@@ -7,333 +7,132 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <style>
 
-        .crime_chart{
-            background: none repeat scroll 0 0 #26abe0;
-        width: 18px;
-            margin: 0 1px;
-
-
-        }
-        .clearances_chart{
-                background: none repeat scroll 0 0 #cf181c;
-
-                width: 20px;
-                float:left;
-                margin-left: 10px;
-                height:150px;
-        }
-
-        .incidents {
-            margin: 0 10px;
-            float:left;
-            text-align: center;
-
-        }
-
-        .stats p {
-            font-weight: 700;
-            font-family: "Open Sans", sans-serif;
-            font-size: 2em;
-            line-height:1.1;
-            margin-top: 0;
-            text-align: center;
-
-
-        }
-
-        .clearance_ {
-            color: #26abe0;
-        }
-
-        .incidents_ {
-            color: #cf181c;
-        }
-
-        .wrap {
-            margin: 0 auto;
-        }
-
-        .wrap h4 {
-            font-size: 0.7em;
-            font-weight: 700;
-            letter-spacing: -0.05em;
-            margin: 10px 0 0;
-            text-align:center;
-        }
-
-        .higher_lower {
-            float:left;
-        }
-
-        .rate h4 {
-            font-size: 0.7em;
-            font-weight: 700;
-            letter-spacing: -0.05em;
-            margin: 10px 0 -4px 0;
-
-        }
-
-        .rate h4 span {
-            font-size: 0.6em;
-        }
-
-        .rate {
-            font-size: 2em;
-            font-weight: 700;
-            margin: -10px auto 10px;
-
-
-        }
-        .crime {
-            color: #cf181c;
-        }
-
-        .clearance {
-            color: #26abe0;
+        span.placeholder {
+            display: block;
+            min-width: 15px;
+            max-width: 4em;
+            height: 1em;
+            background-color: #bebebe;
         }
 
 
-        .rate_compare {
-            float:left;
-            display:block;
-            width:50%;
-            vertical-align: middle;
-            text-align:center;
+        .ucr-tooltip {
+            padding: 10px;
         }
 
-        p.rate_compare {
-
-            margin: 0 5px;
-            line-height:1.1;
+        .ucr-details span {
+            font-size: 1.4em;
         }
 
-        .stats {
-            padding:0 5px;
 
-            float:left;
-
-        }
-        .compare {
-            width: 40%;
-            padding:0 5px;
-            position: relative;
-            float:left;
-
-        }
-
-        .compare span {
-            display:block;
-            width:36px;
-            height:42px;
-            font-size: 12px;
-            text-align: center;
-            padding: 15px 0;
-            position:absolute;
-            top:5px; left:5px;
-            font-weight:700;
-        }
-
-        .fa {
-            color: #cf181c;
-
-            position: absolute;
-            top:5px; left:5px;
-        }
 
     </style>
+
+
 </head>
 <body>
 <div class="container">
+<ol class="breadcrumb">
+        <li>
+            <a href="{% url 'ucr:base' %}">HOME</a>
+        </li>
+        <li>
+            <a href="{% url 'ucr:department_select' county %}">{{ county }} COUNTY</a>
+        </li>
+            <li class="active">{{ jurisdiction }}</li>
+
+</ol>
+
+
+<div class="row">
+    <div class="col-md-4">
+        <div id="homicideChart"></div>
+    </div>
+
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div id="rapeChart"></div>
+    </div>
+
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div id="robChart"></div>
+    </div>
+
+</div>
+
+
+
 <h1>{{ jurisdiction }} - {{ year }}</h1>
 <div class="row">
-    <div class="col-md-4 col-sm-6">
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>Homicide</th>
-                        <th></th>
-                        <th>Crime Rate</th>
-                        <th>Ave. Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>CRIMES</td>
-                        <td>{{ incidents.homicide.0  }}</td>
-                        <td>{{ incidents.homicide.1 }}</td>
-                        <td>{{ incidents.homicide.2 }}</td>
-                    </tr>
-                    <tr>
-                        <td>CLEARANCES</td>
-                        <td>{{ incidents.homicide.3 }}</td>
-                        <td>{{ incidents.homicide.4 }}%</td>
-                        <td>{{ incidents.homicide.5 }}%</td>
-                    </tr>
-                </tbody>
-            </table>
-    </div>
-    <div class="col-md-4 col-sm-6">
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>Rape</th>
-                        <th></th>
-                        <th>Crime Rate</th>
-                        <th>Ave. Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>CRIMES</td>
-                        <td>{{ incidents.rape.0 }}</td>
-                        <td>{{ incidents.rape.1 }}</td>
-                        <td>{{ incidents.rape.2 }}</td>
-                    </tr>
-                    <tr>
-                        <td>CLEARANCES</td>
-                        <td>{{ incidents.rape.3 }}</td>
-                        <td>{{ incidents.rape.4 }}%</td>
-                        <td>{{ incidents.rape.5 }}%</td>
-                    </tr>
-                </tbody>
-            </table>
-    </div>
-    <div class="col-md-4 col-sm-6">
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>Robbery</th>
-                        <th></th>
-                        <th>Crime Rate</th>
-                        <th>Ave. Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>CRIMES</td>
-                        <td>{{ incidents.robbery.0 }}</td>
-                        <td>{{ incidents.robbery.1 }}</td>
-                        <td>{{ incidents.robbery.2 }}</td>
-                    </tr>
-                    <tr>
-                        <td>CLEARANCES</td>
-                        <td>{{ incidents.robbery.3 }}</td>
-                        <td>{{ incidents.robbery.4 }}%</td>
-                        <td>{{ incidents.robbery.5 }}%</td>
-                    </tr>
-                </tbody>
-            </table>
-    </div>
-    <div class="col-md-4 col-sm-6">
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>Aggravated Assault</th>
-                        <th></th>
-                        <th>Crime Rate</th>
-                        <th>Ave. Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>CRIMES</td>
-                        <td>{{ incidents.aggravated_assault.0 }}</td>
-                        <td>{{ incidents.aggravated_assault.1 }}</td>
-                        <td>{{ incidents.aggravated_assault.2 }}</td>
-                    </tr>
-                    <tr>
-                        <td>CLEARANCES</td>
-                        <td>{{ incidents.aggravated_assault.3 }}</td>
-                        <td>{{ incidents.aggravated_assault.4 }}%</td>
-                        <td>{{ incidents.aggravated_assault.5 }}%</td>
-                    </tr>
-                </tbody>
-            </table>
-    </div>
-    <div class="col-md-4 col-sm-6">
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>Burglary</th>
-                        <th></th>
-                        <th>Crime Rate</th>
-                        <th>Ave. Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>CRIMES</td>
-                        <td>{{ incidents.burglary.0 }}</td>
-                        <td>{{ incidents.burglary.1 }}</td>
-                        <td>{{ incidents.burglary.2 }}</td>
-                    </tr>
-                    <tr>
-                        <td>CLEARANCES</td>
-                        <td>{{ incidents.burglary.3 }}</td>
-                        <td>{{ incidents.burglary.4 }}%</td>
-                        <td>{{ incidents.burglary.5 }}%</td>
-                    </tr>
-                </tbody>
-            </table>
-    </div>
-    <div class="col-md-4 col-sm-6">
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>Larceny</th>
-                        <th></th>
-                        <th>Crime Rate</th>
-                        <th>Ave. Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>CRIMES</td>
-                        <td>{{ incidents.larceny.0 }}</td>
-                        <td>{{ incidents.larceny.1 }}</td>
-                        <td>{{ incidents.larceny.2 }}</td>
-                    </tr>
-                    <tr>
-                        <td>CLEARANCES</td>
-                        <td>{{ incidents.larceny.3 }}</td>
-                        <td>{{ incidents.larceny.4 }}%</td>
-                        <td>{{ incidents.larceny.5 }}%</td>
-                    </tr>
-                </tbody>
-            </table>
-    </div>
-    <div class="col-md-4 col-sm-6">
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>Vehicle Theft</th>
-                        <th></th>
-                        <th>Crime Rate</th>
-                        <th>Ave. Rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>CRIMES</td>
-                        <td>{{ incidents.gta.0 }}</td>
-                        <td>{{ incidents.gta.1 }}</td>
-                        <td>{{ incidents.gta.2 }}</td>
-                    </tr>
-                    <tr>
-                        <td>CLEARANCES</td>
-                        <td>{{ incidents.gta.3 }}</td>
-                        <td>{{ incidents.gta.4 }}%</td>
-                        <td>{{ incidents.gta.5 }}%</td>
-                    </tr>
-                </tbody>
-            </table>
-    </div>
-    
+    {% for crime in incidents %}
+    <div class="col-md-6 col-sm-12">
 
+            <h3>{{ crime.6|upper }}</h3>
+            <div class="well">
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>REPORTED</th>
+                        <th>{{ jurisdiction|upper }}</th>
+                        <th>U.S. AVERAGE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>INCIDENTS</td>
+                        <td>{{ crime.0  }}</td>
+                        <td><span class="placeholder"></span></td>
+                    </tr>
+                    {% if crime.1 <= crime.7.0 %}
+                        <tr class="success">
+                    {% elif crime.1 >= crime.7.1 and crime.1 < crime.7.2 %}
+                        <tr class="warning">
+                    {% elif crime.1 >= crime.7.2 %}
+                        <tr class="danger">
+                    {% endif %}
+                        <td>CRIME RATE<br/><small>PER 100,000 PEOPLE</small></td>
+                        <td>
+                            {{ crime.1}}
+                        </td>
+                        <td>{{ crime.2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table table-condensed">
 
+                <thead>
+                    <tr>
+                        <th>CLEARED</th>
+                        <th>{{ jurisdiction|upper }}</th>
+                        <th>U.S. AVERAGE</th>
+                    </tr>
 
-
-    </div>
+                </thead>
+                    <tr>
+                        <td>CASES CLEARED</td>
+                        <td>{{ crime.3 }}</td>
+                        <td><span class="placeholder"></span></td>
+                    </tr>
+                    {% if crime.4 >= crime.8.2 %}
+                        <tr class="success">
+                    {% elif crime.4 < crime.8.1 and crime.4 >= crime.8.0 %}
+                        <tr class="warning">
+                    {% elif crime.4 <= crime.8.0 %}
+                        <tr class="danger">
+                    {% endif %}
+                        <td>CLEARANCE RATE</td>
+                        <td>{{ crime.4 }}%</td>
+                        <td>{{ crime.5 }}%</td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 </div>
 
 

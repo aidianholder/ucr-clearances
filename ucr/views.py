@@ -22,37 +22,60 @@ def department(request, selected_county):
     return render(request, 'department_select.html', context)
 
 
-def single_year(request, year, lea=None, ori=None):
-    if lea:
-        lea_cleaned = lea.replace('_', ' ').upper()
-        agency = Agency.objects.get(department=lea_cleaned)
-    if ori:
-        agency = Agency.objects.get(ori=ori)
-        lea_cleaned = agency.department.replace('_', ' ').upper()
+def single_year(request, year, ori):
+    agency = Agency.objects.get(ori=ori)
+    lea = agency.department.replace('_', ' ').upper()
     try:
         agency_stats = IncidentsClearances.objects.filter(ori=agency.ori).get(year=year)
     except:
         return render(request, 'nodata.html')
     group_stats = GroupRates.objects.filter(pop_group=agency_stats.population).get(year=year)
     index_crimes = ['homicide', 'rape', 'robbery', 'aggravated_assault', 'burglary', 'larceny', 'gta']
-    incidents = {}
+    incidents = []
+    #index_counter = 0
     for crime in index_crimes:
+        #crime in index_crimes:
         no_incidents = getattr(agency_stats, crime)
         try:
             r_incidents = (Decimal(no_incidents)/Decimal(agency_stats.pop_group)) * 100000
             r_incidents = r_incidents.quantize(Decimal('10.01'))
         except DivisionByZero or InvalidOperation:
-            r_incidents = 'NA'
+            r_incidents = False
         no_clearances = getattr(agency_stats, "clearance_" + crime)
         try:
             clearance_rate = Decimal(no_clearances)/Decimal(no_incidents) * 100
             clearance_rate = clearance_rate.quantize(Decimal('10.01'))
         except InvalidOperation:
-            clearance_rate = 'NA'
+            clearance_rate = False
         r_group = getattr(group_stats, "r_" + crime)
         group_clearance_rate = getattr(group_stats, "cl_" + crime)
-        incidents[crime] = [no_incidents, r_incidents, r_group, no_clearances, clearance_rate, group_clearance_rate]
-    context = {"jurisdiction": lea_cleaned, "year": year, "incidents": incidents}
+        group_cleared_ratio = r_group * group_clearance_rate
+        group_uncleared_ratio = r_group - group_cleared_ratio
+        cleared_ratio = False
+        uncleared_ratio = False
+        if r_incidents and clearance_rate:
+                cleared_ratio = r_incidents * clearance_rate/100
+                uncleared_ratio = r_incidents * (Decimal(100) - clearance_rate)/Decimal(100)
+        if crime == "gta":
+            crime = 'vehicle theft'
+        if crime == "aggravated_assault":
+            crime = 'aggravated assault'
+        incidents.append(
+            [no_incidents,
+             r_incidents,
+             r_group,
+             no_clearances,
+             clearance_rate,
+             group_clearance_rate,
+             crime,
+             [r_group * Decimal(0.5), r_group * Decimal(1.5), r_group * Decimal(2)],
+             [group_clearance_rate * Decimal(0.4), group_clearance_rate * Decimal(0.7), group_clearance_rate * Decimal(2)],
+             cleared_ratio,
+             uncleared_ratio,
+             group_cleared_ratio,
+             group_uncleared_ratio
+             ])
+    context = {"jurisdiction": lea, "county": agency.county, "year": year, "incidents": incidents}
     return render(request, 'single_year.html', context)
 
 
@@ -70,8 +93,6 @@ def multiple_year(request, startyear=2005, endyear=2015, lea=None, ori=None):
         return render(request, 'nodata.html')
     years_reported = []
     for ucr in agency_stats:
-        #years_reported.append(ucr.year)
-        #sum and then calc rate for violent crime
         violent_crime = ucr.homicide + ucr.rape + ucr.robbery + ucr.aggravated_assault
         violent_crime_rate = (Decimal(violent_crime) / Decimal(ucr.pop_group)) * 100000
         violent_crime_rate = violent_crime_rate.quantize(Decimal('10.1'))

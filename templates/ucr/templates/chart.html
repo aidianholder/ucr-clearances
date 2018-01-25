@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>"{{ jursidiction }} Crimes and Clearances "</title>
+    <title>{{ jursidiction }} Crimes and Clearances</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
     <style>
         .ucr-tooltip {
@@ -41,7 +41,8 @@
                 "vehicle theft": "vehicle thefts"
             };
 
-          google.charts.load('current', {'packages':['corechart']});
+          //noinspection JSUnresolvedVariable
+            google.charts.load('current', {'packages':['corechart']});
 
           {% if clearance_chart %}
               google.charts.setOnLoadCallback(clearanceChart);
@@ -148,7 +149,7 @@
     </div>
     <div class="row">
 
-                <div class="col-md-10 col-md-offset-1">
+                <div class="col-md-12">
                     {% if clearance_chart == False %}
                         <p><b>No clearance rate data avaiable for {{ jurisdiction }}</b></p>
                     {% endif %}
@@ -157,7 +158,7 @@
                     {% endif %}
                 </div>
 
-                <div class="col-md-10 col-md-offset-1">
+                <div class="col-md-12">
 
 
                     {% if rate_chart == False %}
