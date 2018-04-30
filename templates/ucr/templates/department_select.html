@@ -5,6 +5,8 @@
     <title>Select Law Enforcement Agency</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://pym.nprapps.org/pym.v1.min.js"></script>
+
 </head>
 <body>
 <div class="container">
@@ -18,8 +20,11 @@
             <li class="active">AGENCY</li>
 
     </ol>
-
-    <h1>{{ county }}</h1>
+	<div class="page-header">
+		<h1>Crimes & Clearances</h1>
+	</div>
+	
+    <h2>{{ county }} COUNTY</h2>
     <div class="row">
         <div class="col-md-6">
             <form class="form-inline">
@@ -37,9 +42,11 @@
     </div>
 </div>
 <script>
+    var pymChild = new pym.Child({ id: 'crimesandclearances' });
+
     $(function(){
         $('#getDepartmentDetail').click(function(){
-            const base_url = "http://127.0.0.1:8000/ucr/";
+            const base_url = "http://projects.yakimaherald.com:8888/clearances/ucr/";
             let department_selected = $('#department-select').val();
             window.location.href = base_url + department_selected + '/violent/';
         })

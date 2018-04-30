@@ -5,12 +5,37 @@
     <title>Select County</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://pym.nprapps.org/pym.v1.min.js"></script>
 </head>
 <body>
 <div class="container">
+    <ol class="breadcrumb">
+        <li>
+            <a href="{% url 'ucr:base' %}" class="active">HOME</a>
+        </li>
+        <li>
+          COUNTY
+        </li>
+        <li>
+	  AGENCY
+	</li>
+    </ol>
+
 <div class="row">
-    <div class="col-md-6">
-        <form>
+	<div class="page-header">
+		<h1>Crimes & Clearances<br/> <small>Details on how many crimes happen, and how many are solved, for every city in Washington</small></h1>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-10 col-md-offset-1 well">
+		<p>To see how many crimes are reported in your community, or any jurisdiction in the state, how that compares to the rest of the country, and how many of those crimes police manage to solve -- or as they call it, clear -- start by selecting a county from the drop down menu below.</p>
+	</div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 col-md-offset-2">
+        <form class="form-inline">
             <div class="form-group">
                 <label for="county-select">Select County</label>
                 <select id="county-select" class="form-control">
@@ -19,15 +44,19 @@
                     {% endfor %}
                 </select>
             </div>
-            <button id="getDepartments" type="button" class="btn btn-primary">GO</button>
+            <button id="getDepartments" type="button" class="btn btn-primary btn-large">GO</button>
         </form>
     </div>
+	
 </div>
 </div>
+
 <script>
+    
+    var pymChild = new pym.Child({ id: 'crimesandclearances' });
     $(function(){
         $('#getDepartments').click(function(){
-            const base_url = "http://127.0.0.1:8000/ucr/county/"
+            const base_url = "http://projects.yakimaherald.com:8888/clearances/ucr/county/"
             let county_selected = $('#county-select').val()
             window.location.href = base_url + county_selected
         })

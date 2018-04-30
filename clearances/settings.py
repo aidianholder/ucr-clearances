@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'clearances.urls'
@@ -59,7 +59,7 @@ ROOT_URLCONF = 'clearances.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/Users/aidian/src/clearances/templates/ucr/templates'],
+        'DIRS': ['/home/admin/src/ucr-clearances/templates/ucr/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

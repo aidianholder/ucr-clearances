@@ -18,9 +18,10 @@
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"
                   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
                   crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://pym.nprapps.org/pym.v1.min.js"></script>
         <script type="text/javascript">
 
-            let crimeType = "{{ crime }}";
+           let crimeType = "{{ crime }}";
             crimeType = crimeType.replace("_", " ");
             if (crimeType in ["violent", "property"]){
                 crimeType += " crimes"
@@ -73,7 +74,8 @@
               };
             var chart = new google.visualization.LineChart(document.getElementById('clearance_chart'));
             chart.draw(data, options);
-          }
+	
+	 }
           {% endif %}
 
           {% if rate_chart %}
@@ -105,8 +107,9 @@
             var chart = new google.visualization.ColumnChart(document.getElementById('rate_chart'));
             chart.draw(data, options);
         }
+	
           {% endif %}
-        </script>
+ </script>
 </head>
 <body>
 <div class="container">
@@ -126,10 +129,12 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-3">
-            <form>
+      	<div class="col-sm-6 well">
+		<p>Select which type of crime to display details for</p>	    
+	<div class="col-sm-6">	
+	   <form>
                 <div class="form-group">
-                    <select id="crime-type-select" class="form-control">
+               	<select id="crime-type-select" class="form-control">
                         <option value="violent" {% if crime == 'violent' %}selected{% endif %}>Violent Crime</option>
                         <option value="property" {% if crime == 'property' %}selected{% endif %}>Property Crime</option>
                         <option value="homicide" {% if crime == 'homicide' %}selected{% endif %}>Homicide</option>
@@ -143,10 +148,17 @@
                 </div>
             </form>
         </div>
-            <div class="col-sm-3">
+            <div class="col-sm-6">
                 <button id="getCrimeStats" type="button" class="btn btn-primary btn-block">GO</button>
             </div>
-    </div>
+	</div>    
+
+	<div class="col-sm-6">
+		<p>Crime rates are calculated as number of incidents per 100,000 people. This display allows for a look at rates over a ten-year period for the seven "index" crimes tracked by the FBI, plus composite measures tracking all violent crimes and all property crimes.</p>
+		<p>A case is considerd 'cleared' when police make an arrest or have enough evidence to make one but are prevented from doing so because of something outside the department's control.</p>
+	</div>
+    </div>        
+
     <div class="row">
 
                 <div class="col-md-12">
@@ -154,7 +166,7 @@
                         <p><b>No clearance rate data avaiable for {{ jurisdiction }}</b></p>
                     {% endif %}
                     {% if clearance_chart == True %}
-                        <div id="clearance_chart" style="width:100%;height:250px;"></div>
+                        <div id="rate_chart" style="width:100%;height:250px;"></div>
                     {% endif %}
                 </div>
 
@@ -165,19 +177,20 @@
                         <p><b>No crime rate data available for {{ jurisdiction }}</b></p>
                     {% endif %}
                     {% if rate_chart == True %}
-                        <div id="rate_chart" style="width:100%;height:250px;"></div>
+                        <div id="clearance_chart" style="width:100%;height:250px;"></div>
                     {% endif %}
                 </div>
     </div>
 
 
     <div class="row">
-        <div class="well col-md-10 col-md-offset-1">
+        <div class="center-block col-md-8 col-md-offset-2"><h4>Sources: All the data displayed was filed by the agencies themselves as part of the FBI's Uniform Crime Reporting program.</h4></div>
+	<div class="well col-md-8 col-md-offset-2">
             <h3>The Fine Print</h3>
             <p>
                 <small>
-                    AVERAGE RATE: Average crime and clearances rates are for jurisdictions of similar population size as defined by the FBI.  There are a total of seven categories ranging from group 1, for jurisdictions with 250,000+ population to group 7, for jurisdictions with from 10,000 or fewer people.
-                </small>
+                    AVERAGE RATE: Average crime and clearances rates are for jurisdictions of similar population size as defined by the FBI.  There are a total of seven categories ranging from group 1, for jurisdictions with 250,000+ population to group 7, for jurisdictions with 10,000 or fewer people.
+		</small>
             </p>
             <p>
                 <small>
@@ -186,21 +199,20 @@
             </p>
             <p>
                 <small>
-                    WHY IS THERE A CLEARANCE RATE ABOVE 100%? Clearances are recorded based on the year of the <em>clearance</em> not necessarily the year of the crime. So if a crime occurs in December and an arrest is made in January, the clearance is recorded for the second year.  A number of agencies saw a spike in homicide clearances in the early 2000s as DNA technology allowed for older 'cold' cases to be cleared.
-                </small>
+                    WHY IS THERE A CLEARANCE RATE ABOVE 100%? Clearances are recorded based on the year of the <em>clearance</em> not necessarily the year of the crime. So if a crime occurs in December and an arrest is made in January, the clearance is recorded for the second year.
+		</small>
             </p>
-        </div>
+            <p>
+	
 
+	</div>
     </div>
-
-
-
 </div>
 </body>
 
 <script>
+	var pymChild = new pym.Child({ id:'crimesandclearances' });      
     $(function(){
-
         $("#getCrimeStats").click(function(){
             let indexCrime, currentURL, newURL;
             currentURL = window.location.href;
